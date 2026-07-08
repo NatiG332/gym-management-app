@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PulseFit Studio | Gym Management</title>
+    <style>
+      :root {
+        --bg: #07111f;
+        --panel: #101c2f;
+        --panel-2: #14253d;
+        --accent: #ff7a1a;
+        --accent-2: #4cc9f0;
+        --text: #f5f7fb;
+        --muted: #9fb1c9;
+        --border: rgba(255,255,255,0.12);
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background: linear-gradient(135deg, var(--bg), #16253b);
+        color: var(--text);
+        padding: 24px;
+      }
+      .page { max-width: 1200px; margin: 0 auto; }
+      .hero {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+        background: rgba(16, 28, 47, 0.95);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 24px;
+        margin-bottom: 20px;
+      }
+      .eyebrow { color: var(--accent-2); font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; font-size: 0.8rem; }
+      h1 { font-size: 2rem; margin: 8px 0; }
+      .hero p { color: var(--muted); line-height: 1.6; }
+      .hero-actions { display: flex; gap: 10px; margin-top: 16px; }
+      .btn { padding: 10px 14px; border-radius: 999px; border: 0; cursor: pointer; font-weight: 700; }
+      .btn-primary { background: var(--accent); color: white; }
+      .btn-secondary { background: transparent; color: var(--accent-2); border: 1px solid var(--accent-2); }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 18px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+      }
+      .grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-bottom: 20px; }
+      form { display: flex; flex-direction: column; gap: 10px; }
+      input, button { padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); font-size: 1rem; }
+      input { background: var(--panel-2); color: var(--text); }
+      button { background: var(--accent-2); color: #052032; cursor: pointer; font-weight: 700; }
+      .stat { display: inline-block; padding: 8px 12px; border-radius: 999px; background: rgba(76, 201, 240, 0.15); color: var(--accent-2); margin-top: 10px; }
+      .list-item { padding: 10px 0; border-bottom: 1px solid var(--border); }
+      .list-item:last-child { border-bottom: none; }
+      .muted { color: var(--muted); }
+      .small { font-size: 0.92rem; }
+      .badge { display: inline-block; margin-top: 6px; padding: 4px 8px; border-radius: 999px; background: rgba(255,122,26,0.2); color: #ffd1a8; font-size: 0.75rem; }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header class="hero">
+        <div>
+          <div class="eyebrow">PulseFit Studio</div>
+          <h1>Modern gym operations, without the clutter.</h1>
+          <p>This project helps a fitness studio manage members, classes, and bookings in one place. It was built to show the core web programming concepts in a realistic setting.</p>
+          <div class="hero-actions">
+            <button class="btn btn-primary" onclick="document.getElementById('classForm').scrollIntoView({behavior:'smooth'})">Add a class</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('dashboard').scrollIntoView({behavior:'smooth'})">View dashboard</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Studio snapshot</h3>
+          <div id="dashboard">Loading...</div>
+          <div class="badge">Sample data is already seeded for you</div>
+        </div>
+      </header>
+
+      <section class="grid">
+        <article class="card">
+          <h2>Create account</h2>
+          <p class="muted small">New members can register quickly and receive access to the studio experience.</p>
+          <form id="registerForm">
+            <input name="name" placeholder="Full name" required />
+            <input name="email" type="email" placeholder="Email" required />
+            <input name="password" type="password" placeholder="Password" required />
+            <button type="submit">Register</button>
+          </form>
+        </article>
+
+        <article class="card">
+          <h2>Staff login</h2>
+          <p class="muted small">Use the demo admin account to manage classes and keep operations moving.</p>
+          <form id="loginForm">
+            <input name="email" type="email" placeholder="Email" value="admin@pulsefit.com" required />
+            <input name="password" type="password" placeholder="Password" value="admin123" required />
+            <button type="submit">Login</button>
+          </form>
+        </article>
+      </section>
+
+      <section class="grid">
+        <article class="card">
+          <h2>Upcoming classes</h2>
+          <div id="classes">Loading...</div>
+        </article>
+        <article class="card">
+          <h2>Recent bookings</h2>
+          <div id="bookings">Loading...</div>
+        </article>
+      </section>
+
+      <section class="grid">
+        <article class="card">
+          <h2>Add a class</h2>
+          <p class="muted small">Only logged-in admins can create new sessions for the schedule.</p>
+          <form id="classForm">
+            <input name="name" placeholder="Class name" required />
+            <input name="trainer" placeholder="Trainer" required />
+            <input name="time" placeholder="Time" required />
+            <input name="capacity" type="number" placeholder="Capacity" required />
+            <button type="submit">Create class</button>
+          </form>
+        </article>
+      </section>
+    </div>
+
+    <script>
+      async function loadDashboard() {
+        const res = await fetch('/api/dashboard');
+        const data = await res.json();
+        document.getElementById('dashboard').innerHTML = `
+          <div class="stat">${data.users} members</div>
+          <div class="stat">${data.classes} classes</div>
+          <div class="stat">${data.bookings} bookings</div>
+        `;
+      }
+
+      async function loadClasses() {
+        const res = await fetch('/api/classes');
+        const data = await res.json();
+        document.getElementById('classes').innerHTML = data.map((item) => `
+          <div class="list-item">
+            <strong>${item.name}</strong><br />
+            <span class="muted small">${item.trainer} • ${item.time} • Capacity ${item.capacity}</span>
+          </div>
+        `).join('');
+      }
+
+      async function loadBookings() {
+        const res = await fetch('/api/bookings');
+        const data = await res.json();
+        document.getElementById('bookings').innerHTML = data.map((item) => `
+          <div class="list-item">
+            <strong>${item.member_name}</strong><br />
+            <span class="muted small">Booked ${item.class_name}</span>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('registerForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const payload = Object.fromEntries(formData.entries());
+        const res = await fetch('/api/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const result = await res.json();
+        alert(result.error ? result.error : 'Welcome to PulseFit Studio');
+      });
+
+      document.getElementById('loginForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const payload = Object.fromEntries(formData.entries());
+        const res = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const data = await res.json();
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+        }
+        alert(data.token ? 'Signed in successfully' : 'Login failed');
+      });
+
+      document.getElementById('classForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const payload = Object.fromEntries(formData.entries());
+        payload.capacity = Number(payload.capacity);
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/classes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        alert(result.error ? result.error : 'Class created');
+        event.target.reset();
+        loadClasses();
+      });
+
+      loadDashboard();
+      loadClasses();
+      loadBookings();
+    </script>
+  </body>
+</html>
